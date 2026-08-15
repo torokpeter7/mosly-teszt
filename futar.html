@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Futár navigáció | MOSLY DELIVERY</title>
+    <meta name="description" content="MOSLY DELIVERY futári navigáció és kézbesítési felület." />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <script type="module" src="js/supabase.js"></script>
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script type="module" src="js/futar.js"></script>
+  </head>
+  <body class="dashboard-body">
+    <div class="dashboard-shell">
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 15V8.5C5 6.567 6.567 5 8.5 5H15.5C17.433 5 19 6.567 19 8.5V15H5Z" fill="white"/><path d="M7.5 15V10.5H16.5V15H7.5Z" fill="#1E5C54" fill-opacity="0.3"/><path d="M8.5 8.2L10.6 6.5L12.4 8.5L14.6 6.5L16.5 8.2" stroke="#1E5C54" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div><div style="font-size:0.7rem; letter-spacing:0.12em; opacity:0.7; text-transform:uppercase;">MOSLY</div><strong>Futár</strong></div>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html" class="sidebar-link">Kezdőlap</a>
+          <a href="rendelesek.html" class="sidebar-link">Rendelések</a>
+          <a href="uj-rendeles.html" class="sidebar-link">Új rendelés</a>
+          <a href="futar-rendelese.html" class="sidebar-link">Csomag futárhoz</a>
+          <a href="futar.html" class="sidebar-link active">Futár</a>
+          <a href="profil.html" class="sidebar-link">Profil</a>
+          <a href="#" id="logoutButton" class="sidebar-link">Kijelentkezés</a>
+        </nav>
+      </aside>
+
+      <main class="dashboard-main courier-layout">
+        <section class="courier-mobile-shell">
+          <div class="courier-header">
+            <div>
+              <div class="eyebrow">MOSLY</div>
+              <h1 id="courierGreeting">Jó reggelt!</h1>
+            </div>
+            <div class="courier-status-chip" id="courierStatusChip">Útvonal készen</div>
+          </div>
+
+          <div class="courier-summary-grid">
+            <div class="summary-card compact">
+              <span class="label">Mai csomagok</span>
+              <strong id="statsTodayCount">0</strong>
+            </div>
+            <div class="summary-card compact">
+              <span class="label">Hátralévő</span>
+              <strong id="statsRemainingCount">0</strong>
+            </div>
+            <div class="summary-card compact">
+              <span class="label">Kézbesítve</span>
+              <strong id="statsDeliveredCount">0</strong>
+            </div>
+          </div>
+
+          <div class="courier-settings-row">
+            <div class="input-group">
+              <label for="routeStartPoint">Indulási pont</label>
+              <input class="input" id="routeStartPoint" name="routeStartPoint" type="text" value="Baja, Orgona utca 2" placeholder="pl. Baja, Orgona utca 2" />
+            </div>
+          </div>
+
+          <div class="navigator-card">
+            <div class="navigator-top">
+              <div class="eyebrow">KÖVETKEZŐ CÍM</div>
+              <div id="nextStopBadge">Várakozás</div>
+            </div>
+            <h3 id="nextStopName">Kérjük, indítsa el az útvonalat.</h3>
+            <p class="address-line" id="nextStopAddress">—</p>
+            <div class="turn-row">
+              <strong id="turnInstruction">—</strong>
+            </div>
+          </div>
+
+          <div class="courier-actions">
+            <button class="btn btn-success" id="markDeliveredButton" type="button">✓ KÉZBESÍTVE</button>
+            <button class="btn btn-danger" id="markFailedButton" type="button">✕ NEM SIKERÜLT</button>
+          </div>
+
+          <div class="delivery-failure-box">
+            <label for="deliveryFailureReason">Nem sikerült kézbesíteni – ok:</label>
+            <select id="deliveryFailureReason" class="status-select">
+              <option value="Nem volt otthon">Nem volt otthon</option>
+              <option value="Rossz cím">Rossz cím</option>
+              <option value="Nem elérhető">Nem elérhető</option>
+              <option value="Egyéb">Egyéb</option>
+            </select>
+          </div>
+
+        </section>
+      </main>
+    </div>
+
+    <script type="module">
+      import { ensureAuthenticated } from './js/auth.js';
+      import { setupCourierPage } from './js/futar.js';
+      ensureAuthenticated(['admin', 'mosly_employee', 'courier']);
+      setupCourierPage();
+    </script>
+  </body>
+</html>

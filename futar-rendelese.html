@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Csomag futárhoz rendelése | MOSLY DELIVERY</title>
+    <meta name="description" content="Futárhoz rendelés kezelése a Mosly rendszerben." />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <script type="module" src="js/supabase.js"></script>
+    <script type="module" src="js/futar-rendelese.js"></script>
+  </head>
+  <body class="dashboard-body">
+    <div class="dashboard-shell">
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 15V8.5C5 6.567 6.567 5 8.5 5H15.5C17.433 5 19 6.567 19 8.5V15H5Z" fill="white"/><path d="M7.5 15V10.5H16.5V15H7.5Z" fill="#1E5C54" fill-opacity="0.3"/><path d="M8.5 8.2L10.6 6.5L12.4 8.5L14.6 6.5L16.5 8.2" stroke="#1E5C54" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div><div style="font-size:0.7rem; letter-spacing:0.12em; opacity:0.7; text-transform:uppercase;">MOSLY</div><strong>Admin</strong></div>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html" class="sidebar-link">Kezdőlap</a>
+          <a href="rendelesek.html" class="sidebar-link">Rendelések</a>
+          <a href="uj-rendeles.html" class="sidebar-link">Új rendelés</a>
+          <a href="futar-rendelese.html" class="sidebar-link active">Csomag futárhoz</a>
+          <a href="futar.html" class="sidebar-link">Futár</a>
+          <a href="profil.html" class="sidebar-link">Profil</a>
+          <a href="#" id="logoutButton" class="sidebar-link">Kijelentkezés</a>
+        </nav>
+      </aside>
+
+      <main class="dashboard-main">
+        <div class="dashboard-topbar">
+          <div class="dashboard-title">
+            <h1>Csomag futárhoz rendelése</h1>
+            <p>Válassz ki egy futárt és rendeld hozzá a kiválasztott csomagot.</p>
+          </div>
+        </div>
+
+        <section class="panel">
+          <div class="form-grid">
+            <div class="input-group">
+              <label for="courierSelect">Futár</label>
+              <select id="courierSelect" class="input"></select>
+            </div>
+            <div class="input-group">
+              <label for="shipmentSelect">Csomag</label>
+              <select id="shipmentSelect" class="input"></select>
+            </div>
+            <div class="input-group">
+              <label for="assignmentStatus">Státusz</label>
+              <select id="assignmentStatus" class="input">
+                <option value="order_received">Rendelés felvéve</option>
+                <option value="out_for_delivery" selected>Kiszállítás alatt</option>
+                <option value="courier_on_way">Úton hozzád</option>
+              </select>
+            </div>
+            <div class="input-group" style="align-self: end;">
+              <button id="assignCourierButton" class="btn btn-primary" type="button">FUTÁRHOZ RENDELÉS</button>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-top: 16px;">
+            <div class="input-group" style="grid-column: 1 / -1;">
+              <button id="assignAllReceivedButton" class="btn btn-secondary" type="button">ÖSSZES „RENDELÉS FELVÉVE” CSOMAG FUTÁRHOZ RENDELÉSE</button>
+            </div>
+          </div>
+
+          <div id="assignmentMessage" class="alert" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="panel" style="margin-top: 20px;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Csomagszám</th>
+                  <th>Név</th>
+                  <th>Település</th>
+                  <th>Futár</th>
+                  <th>Státusz</th>
+                </tr>
+              </thead>
+              <tbody id="assignmentTable"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module">
+      import { ensureAuthenticated } from './js/auth.js';
+      import { setupCourierAssignmentPage } from './js/futar-rendelese.js';
+      ensureAuthenticated(['admin', 'mosly_employee']);
+      setupCourierAssignmentPage();
+    </script>
+  </body>
+</html>
