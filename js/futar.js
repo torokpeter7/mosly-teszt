@@ -368,12 +368,14 @@ function updateNextStopVisual() {
     setText('nextStopName', 'Nincs több megálló');
     setText('nextStopAddress', 'A mai útvonal befejeződött.');
     setText('turnInstruction', 'Kész a nap.');
+    setText('nextStopPhone', '—');
     document.getElementById('courierStatusChip').textContent = 'Kész';
     return;
   }
 
   const address = `${nextStop.city || ''} ${nextStop.street || ''} ${nextStop.house_number || ''}`.trim();
   const customerName = nextStop.customer_name || 'Ügyfél';
+  const phoneNumber = nextStop.customer_phone || '—';
   let instructionText = 'Közeli cél.';
 
   if (navigationState.currentPosition && nextStop.coords) {
@@ -397,6 +399,7 @@ function updateNextStopVisual() {
   setText('nextStopName', customerName);
   setText('nextStopAddress', address || 'Cím nem található');
   setText('turnInstruction', instructionText);
+  setText('nextStopPhone', phoneNumber);
   setText('routeStateText', navigationState.routeReady ? 'Útvonal aktív' : 'Várakozás');
   document.getElementById('nextStopBadge').textContent = navigationState.routeReady ? 'Következő megálló' : 'Várakozás';
 }
@@ -616,10 +619,34 @@ async function markCurrentStopFailed() {
   }
 }
 
+function callCurrentCustomer() {
+  const currentStop = navigationState.route[navigationState.currentStopIndex];
+  if (!currentStop) {
+    alert('Nincs aktív megálló.');
+    return;
+  }
+
+  if (!currentStop.customer_phone) {
+    alert('Nincs telefonszám a megrendelőhöz.');
+    return;
+  }
+
+  // Szóköz és egyéb karakterek eltávolítása, csak számok maradnak
+  const phoneNumber = currentStop.customer_phone.replace(/\D/g, '');
+  if (!phoneNumber) {
+    alert('Érvénytelen telefonszám.');
+    return;
+  }
+
+  // tel: URI séma használata - működik mobil és asztali eszközökön
+  window.location.href = `tel:${phoneNumber}`;
+}
+
 function bindNavigationControls() {
   const startButton = document.getElementById('routeStartButton');
   const deliveryButton = document.getElementById('markDeliveredButton');
   const failedButton = document.getElementById('markFailedButton');
+  const callButton = document.getElementById('callCustomerButton');
 
   startButton?.addEventListener('click', async () => {
     await rebuildRoute();
@@ -633,6 +660,10 @@ function bindNavigationControls() {
 
   failedButton?.addEventListener('click', () => {
     markCurrentStopFailed();
+  });
+
+  callButton?.addEventListener('click', () => {
+    callCurrentCustomer();
   });
 }
 
