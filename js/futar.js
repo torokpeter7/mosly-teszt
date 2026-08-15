@@ -642,11 +642,49 @@ function callCurrentCustomer() {
   window.location.href = `tel:${phoneNumber}`;
 }
 
+function openAppleMaps() {
+  const currentStop = navigationState.route[navigationState.currentStopIndex];
+  if (!currentStop) {
+    alert('Nincs aktív megálló.');
+    return;
+  }
+
+  // Cím összeállítása
+  const address = `${currentStop.city || ''} ${currentStop.street || ''} ${currentStop.house_number || ''}`.trim();
+
+  let mapsUrl = 'http://maps.apple.com/';
+
+  // Ha van koordináta, azt használjuk
+  if (currentStop.coords) {
+    const destLat = currentStop.coords.lat;
+    const destLon = currentStop.coords.lon;
+
+    // Ha van aktuális pozíció, útvonalat adunk meg
+    if (navigationState.currentPosition) {
+      const startLat = navigationState.currentPosition.lat;
+      const startLon = navigationState.currentPosition.lon;
+      mapsUrl += `?saddr=${startLat},${startLon}&daddr=${destLat},${destLon}&dirflg=d`;
+    } else {
+      // Csak cél
+      mapsUrl += `?daddr=${destLat},${destLon}`;
+    }
+  } else if (address) {
+    // Ha nincs koordináta, a cím alapján nyitunk
+    mapsUrl += `?daddr=${encodeURIComponent(address)}`;
+  } else {
+    alert('Nincs elég adat az Apple Térképek megnyitásához.');
+    return;
+  }
+
+  window.open(mapsUrl, '_blank');
+}
+
 function bindNavigationControls() {
   const startButton = document.getElementById('routeStartButton');
   const deliveryButton = document.getElementById('markDeliveredButton');
   const failedButton = document.getElementById('markFailedButton');
   const callButton = document.getElementById('callCustomerButton');
+  const appleMapsButton = document.getElementById('appleMapsButton');
 
   startButton?.addEventListener('click', async () => {
     await rebuildRoute();
@@ -664,6 +702,10 @@ function bindNavigationControls() {
 
   callButton?.addEventListener('click', () => {
     callCurrentCustomer();
+  });
+
+  appleMapsButton?.addEventListener('click', () => {
+    openAppleMaps();
   });
 }
 
