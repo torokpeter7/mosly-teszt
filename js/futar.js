@@ -602,20 +602,36 @@ async function markCurrentStopFailed() {
 
   const reason = document.getElementById('deliveryFailureReason')?.value || 'Egyéb';
 
+  if (!isSupabaseConfigured()) {
+    alert('Adatbázis hiba - nem sikerült menteni');
+    return;
+  }
+
   try {
     const payload = {
-      status: 'out_for_delivery',
-      updated_at: new Date().toISOString(),
+      status: 'delivery_failed',
       delivery_failed_reason: reason,
-      delivery_failed_at: new Date().toISOString()
+      delivery_failed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
-    await supabase.from('shipments').update(payload).eq('id', currentStop.id);
+    const { error } = await supabase
+      .from('shipments')
+      .update(payload)
+      .eq('id', currentStop.id);
+
+    if (error) {
+      console.error('Kézbesítés hiba mentése sikertelen:', error);
+      alert('Hiba az adatok mentésekor: ' + error.message);
+      return;
+    }
+
     speakHungarian('Nem sikerült a kézbesítés.');
     navigationState.route.splice(navigationState.currentStopIndex, 1);
-    rebuildRoute();
+    await rebuildRoute();
   } catch (error) {
     console.error('Kézbesítés hiba mentése sikertelen:', error);
+    alert('Hiba az adatok mentésekor');
   }
 }
 

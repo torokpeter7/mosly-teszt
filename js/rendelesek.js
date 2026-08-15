@@ -1,13 +1,22 @@
 import { supabase, isSupabaseConfigured } from './supabase.js';
 import { STATUS_LABELS, formatDate } from './utils.js';
 
+function getTodayDateString() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export async function loadOrders() {
   if (!isSupabaseConfigured()) return;
 
   const search = document.getElementById('filterSearch')?.value.trim() || '';
   const status = document.getElementById('filterStatus')?.value || '';
   const city = document.getElementById('filterCity')?.value.trim() || '';
-  const date = document.getElementById('filterDate')?.value || '';
+  const dateInput = document.getElementById('filterDate');
+  const date = dateInput?.value || getTodayDateString();
 
   let query = supabase.from('shipments').select('*');
 
@@ -24,7 +33,14 @@ export async function loadOrders() {
   }
 
   if (date) {
-    query = query.gte('created_at', new Date(date).toISOString());
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    query = query.gte('created_at', startOfDay.toISOString());
+    query = query.lte('created_at', endOfDay.toISOString());
   }
 
   const { data, error } = await query.order('created_at', { ascending: false });
@@ -46,6 +62,12 @@ export async function loadOrders() {
 }
 
 export function setupOrdersPage() {
+  // A dátum mezőt állítsd a mai napra
+  const dateInput = document.getElementById('filterDate');
+  if (dateInput) {
+    dateInput.value = getTodayDateString();
+  }
+
   const form = document.getElementById('shipmentFilters');
   if (form) {
     form.addEventListener('submit', (event) => {

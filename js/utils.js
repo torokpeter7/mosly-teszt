@@ -2,10 +2,11 @@ export const STATUS_LABELS = {
   order_received: 'Rendelés felvéve',
   out_for_delivery: 'Kiszállítás alatt',
   courier_on_way: 'Úton hozzád',
+  delivery_failed: 'Nem sikerült a kézbesítés',
   delivered: 'Kiszállítva'
 };
 
-export const STATUS_ORDER = ['order_received', 'out_for_delivery', 'courier_on_way', 'delivered'];
+export const STATUS_ORDER = ['order_received', 'out_for_delivery', 'courier_on_way', 'delivery_failed', 'delivered'];
 
 export function formatDate(dateValue) {
   if (!dateValue) return '—';

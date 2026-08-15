@@ -8,6 +8,14 @@ function setMessage(message, type = 'success') {
   el.textContent = message;
 }
 
+function getTodayDateString() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 async function loadCouriers() {
   if (!isSupabaseConfigured()) return [];
 
@@ -28,10 +36,23 @@ async function loadCouriers() {
 async function loadShipments() {
   if (!isSupabaseConfigured()) return [];
 
-  const { data, error } = await supabase
-    .from('shipments')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const dateInput = document.getElementById('filterDate');
+  const date = dateInput?.value || getTodayDateString();
+
+  let query = supabase.from('shipments').select('*');
+
+  if (date) {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    query = query.gte('created_at', startOfDay.toISOString());
+    query = query.lte('created_at', endOfDay.toISOString());
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error || !data) return [];
 
@@ -49,10 +70,25 @@ async function loadShipments() {
 async function loadAssignmentTable() {
   if (!isSupabaseConfigured()) return;
 
-  const { data, error } = await supabase
+  const dateInput = document.getElementById('filterDate');
+  const date = dateInput?.value || getTodayDateString();
+
+  let query = supabase
     .from('shipments')
-    .select('*, profiles!shipments_courier_id_fkey(full_name, email)')
-    .order('created_at', { ascending: false });
+    .select('*, profiles!shipments_courier_id_fkey(full_name, email)');
+
+  if (date) {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    query = query.gte('created_at', startOfDay.toISOString());
+    query = query.lte('created_at', endOfDay.toISOString());
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error || !data) return;
 
@@ -112,15 +148,30 @@ async function assignAllOrderReceivedToCourier() {
     return;
   }
 
-  const { data, error } = await supabase
+  const dateInput = document.getElementById('filterDate');
+  const date = dateInput?.value || getTodayDateString();
+
+  let updateQuery = supabase
     .from('shipments')
     .update({
       courier_id: courierId,
       status: nextStatus,
       updated_at: new Date().toISOString()
     })
-    .eq('status', 'order_received')
-    .select('id');
+    .eq('status', 'order_received');
+
+  if (date) {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    updateQuery = updateQuery.gte('created_at', startOfDay.toISOString());
+    updateQuery = updateQuery.lte('created_at', endOfDay.toISOString());
+  }
+
+  const { data, error } = await updateQuery.select('id');
 
   if (error) {
     setMessage(error.message || 'A tömeges futárhoz rendelés sikertelen volt.', 'error');
@@ -134,6 +185,12 @@ async function assignAllOrderReceivedToCourier() {
 }
 
 export function setupCourierAssignmentPage() {
+  // A dátum mezőt állítsd a mai napra
+  const dateInput = document.getElementById('filterDate');
+  if (dateInput) {
+    dateInput.value = getTodayDateString();
+  }
+
   const button = document.getElementById('assignCourierButton');
   if (button) {
     button.addEventListener('click', assignCourierToShipment);
@@ -142,6 +199,15 @@ export function setupCourierAssignmentPage() {
   const bulkButton = document.getElementById('assignAllReceivedButton');
   if (bulkButton) {
     bulkButton.addEventListener('click', assignAllOrderReceivedToCourier);
+  }
+
+  const form = document.getElementById('filterForm');
+  if (form) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      loadShipments();
+      loadAssignmentTable();
+    });
   }
 
   loadCouriers();

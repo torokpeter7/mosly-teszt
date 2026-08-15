@@ -21,12 +21,14 @@ CREATE TABLE IF NOT EXISTS public.shipments (
   street TEXT NOT NULL,
   house_number TEXT NOT NULL,
   notes TEXT,
-  status TEXT NOT NULL CHECK (status IN ('order_received', 'out_for_delivery', 'courier_on_way', 'delivered')) DEFAULT 'order_received',
+  status TEXT NOT NULL CHECK (status IN ('order_received', 'out_for_delivery', 'courier_on_way', 'delivered', 'delivery_failed')) DEFAULT 'order_received',
   created_by UUID REFERENCES public.profiles(id),
   courier_id UUID REFERENCES public.profiles(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  delivered_at TIMESTAMPTZ
+  delivered_at TIMESTAMPTZ,
+  delivery_failed_reason TEXT,
+  delivery_failed_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS public.shipment_status_history (
